@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  rodgezhao
+  Archives - rodgezhao
   
   </title>
   
@@ -87,170 +87,34 @@
        
 
  <script type="text/javascript">
-	$(function(){
-		$('#menu_item_index').addClass('is_active');
-	});
+  $(function(){
+    $('#menu_item_archives').addClass('is_active');
+  });
 </script>
 <div class="row">
-	<div class="large-8 medium-8 columns">
-		<div class="markdown-body home-categories">
-		
-			<div class="article">
-                <a class="clearlink" href="16156063115976.html">
+  <div class="large-8 medium-8 columns">
+    <div id="archives-page-wrap">
+        <h1>Archives</h1>
+        <div class="markdown-body archives-wrap">
+          
+             
+                <h1>2021</h1>
+            
+            <div class="article">
+              <a class="clearlink" href="16156063115976.html">
+                <h1>fuzz</h1>
+              </a>
+              <div class="read-more clearfix">
+                <span class="date">2021/03/13</span>
                 
-                  <h1>fuzz</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h1 id="toc_0">fuzz</h1>
+                 
+              </div>
+            </div><!-- article -->
 
-<ul>
-<li>$tag: @fuzz</li>
-</ul>
-
-<ul>
-<li>
-<a href="#toc_0">fuzz</a>
-<ul>
-<li>
-<a href="#toc_1">libfuzzer</a>
-</li>
-<li>
-<a href="#toc_2">入门指导</a>
-</li>
-<li>
-<a href="#toc_3">Basic Block</a>
-</li>
-<li>
-<a href="#toc_4"> write fuzz target</a>
-<ul>
-<li>
-<a href="#toc_5">FDP</a>
-</li>
-<li>
-<a href="#toc_6">code snippnet</a>
-</li>
-<li>
-<a href="#toc_7">原则</a>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-
-<h2 id="toc_1">libfuzzer</h2>
-
-<p><a href="https://www.secpulse.com/archives/71898.html">fuzz实战之libfuzzer</a><br/>
-<a href="https://source.android.com/devices/tech/debug/sanitizers#undefinedbehaviorsanitizer">LLVM 之ASan、UBSan、KASAN</a><br/>
-<a href="http://llvm.org/docs/LibFuzzer.html">LibFuzzer官网</a></p>
-
-<h2 id="toc_2">入门指导</h2>
-
-<p><a href="https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md">libFuzzer Tutorial</a><br/>
-<a href="http://clang.llvm.org/docs/SourceBasedCodeCoverage.html">覆盖率</a><br/>
-<a href="https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html">Guided in-process fuzzing of Chrome components</a></p>
-
-<h2 id="toc_3">Basic Block</h2>
-
-<p><a href="https://blog.csdn.net/livelylittlefish/article/details/6451047?utm_medium=distribute.pc_relevant.none-task-blog-title-2&amp;spm=1001.2101.3001.4242">GCC Coverage代码分析-基本块图、插桩位置及桩代码执行分析</a><br/>
-”A basic block is a sequence of instructions with only entry and only one exit. If any one of the instructions are executed, they will all be executed, and in sequence from first to last.”</p>
-
-<p>这里可以把基本块看成一行整体的代码，基本块内的代码是线性的，要不全部运行，要不都不运行。</p>
-
-<h2 id="toc_4"> write fuzz target</h2>
-
-<h3 id="toc_5">FDP</h3>
-
-<blockquote>
-<p>Main concepts</p>
-</blockquote>
-
-<ul>
-<li><a href="https://github.com/llvm/llvm-project/blob/master/compiler-rt/include/fuzzer/FuzzedDataProvider.h">FuzzedDataProvider</a> is a class whose constructor accepts <code>const uint8_t*, size_t</code> arguments. Usually, you would call it in the beginning of your <code>LLVMFuzzerTestOneInput</code> and pass the <code>data, size</code> parameters provided by the fuzzing engine.</li>
-<li>Once an FDP object is constructed using the fuzz input, you can consume the data from the input by calling the FDP methods listed below.</li>
-<li>If there is not enough data left to consume, FDP will consume all the remaining bytes. For example, if you call <code>ConsumeBytes(10)</code> when there are only <code>4</code> bytes left in the fuzz input, FDP will return a vector of length <code>4</code>.</li>
-<li>If there is no data left, FDP will return the default value for the requested type or an empty container (when consuming a sequence of bytes).</li>
-<li>If you consume data from FDP in a loop, make sure to check the value returned by <code>remaining_bytes()</code> between loop iterations.</li>
-<li>Do not use the methods that return <code>std::string</code> unless your API requires a string object or a C-style string with a trailing null byte. This is a common mistake that hides off-by-one buffer overflows from AddressSanitizer.</li>
-</ul>
-
-<h3 id="toc_6">code snippnet</h3>
-
-<p><a href="https://github.com/llvm/llvm-project/blob/master/compiler-rt/include/fuzzer/FuzzedDataProvider.h">FuzzedDataProvider.h</a></p>
-
-<p><a href="https://github.com/google/fuzzing/blob/master/docs/split-inputs.md#fuzzed-data-provider">How To Split A Fuzzer-Generated Input Into Several</a></p>
-
-<pre><code class="language-cpp">extern &quot;C&quot; int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  std::string input(reinterpret_cast&lt;const char*&gt;(data), size);
-  QuicFuzzedDataProvider provider(data, size);
-  
-  provider.ConsumeBool();
-  provider.ConsumeIntegral&lt;uint8_t&gt;();
-  provider.ConsumeIntegral&lt;uint64_t&gt;();
-  provider.ConsumeIntegralInRange&lt;uint16_t&gt;(0, kMaxStringLength);
-  std::string value = provider.ConsumeRandomLengthString(value_length);
-  std::vector&lt;char&gt; payload_buffer =
-        data_provider.ConsumeBytes&lt;char&gt;(payload_size);
-  while (provider.remaining_bytes() != 0) {
-    switch (provider.ConsumeIntegral&lt;uint8_t&gt;() % 4) {
-      case 0:
-        //todo
-        break;
-      case 1:
-        // todo
-        break;
-    }
-</code></pre>
-
-<h3 id="toc_7">原则</h3>
-
-<ul>
-<li>尽量简单，在最小浸入测试目标内部细节的基础上，提高覆盖率</li>
-</ul>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2021/03/13</span>
-                    
-          				   
-                    
-
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-              
-
-
-			<div class="row">
-			  <div class="large-6 columns">
-			  <p class="text-left" style="padding-top:25px;">
-			   
-			  </p>
-			  </div>
-			  <div class="large-6 columns">
-			<p class="text-right" style="padding-top:25px;">
-			
-			</p>
-			  </div>
-			</div>
-		</div>
-	</div><!-- large 8 -->
+           
+        </div>
+      </div>
+  </div>
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">
